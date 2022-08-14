@@ -1,0 +1,69 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: aws-play (make a basic table and operate on it with a lambda)
+
+Parameters:
+  LambdaFunctionName:
+    Type: String
+    AllowedPattern: ^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$
+    Default: aws-play-basic-table
+
+  ZipBucketName:
+    Type: String
+    Default: losalamosal-aws-play-uploads # bucket must exist with versioning enabled
+
+  ZipVersionId:
+    Type: String
+
+  ZipS3Key:
+    Type: String
+    Default: lambda.zip
+
+# TODO: make the versioned lambda upload bucket
+Resources:
+  BasicTableLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      # So lambda can write logs
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+
+  BasicTableLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref LambdaFunctionName
+      Role: !GetAtt BasicTableLambdaRole.Arn
+      Runtime: nodejs16.x
+      Handler: index.handler
+      Code:
+        S3Bucket: !Ref ZipBucketName
+        S3Key: !Ref ZipS3Key
+        S3ObjectVersion: !Ref ZipVersionId
+      # https://github.com/charoitel/lambda-layer-canvas-nodejs/wiki
+      # https://docs.aws.amazon.com/serverlessrepo/latest/devguide/sharing-lambda-layers.html
+      Layers:
+        - arn:aws:lambda:us-west-2:136545519964:layer:canvas-nodejs:1
+      MemorySize: 128
+      Timeout: 30
+
+  BasicTableLimitRetries:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref BasicTableLambda
+      MaximumRetryAttempts: 0
+      Qualifier: "$LATEST"
+
+  # Thanks https://ldoughty.com/2020/01/aws-http-api-gateway-cloudformation-setup/
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Join [/, ["/aws/lambda", !Ref BasicTableLambda]]
+      RetentionInDays: 3
