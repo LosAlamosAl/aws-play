@@ -7,6 +7,10 @@ Parameters:
     AllowedPattern: ^[a-zA-Z0-9]+[a-zA-Z0-9-]+[a-zA-Z0-9]+$
     Default: aws-play-basic-table
 
+  TableName:
+    Type: String
+    Default: bookfinder-table
+
   ZipBucketName:
     Type: String
     Default: losalamosal-aws-play-uploads # bucket must exist with versioning enabled
@@ -18,8 +22,28 @@ Parameters:
     Type: String
     Default: lambda.zip
 
-# TODO: make the versioned lambda upload bucket
 Resources:
+  BookFinderTable:
+    Type: AWS::DynamoDB::Table
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      TableName: !Ref TableName
+      AttributeDefinitions:
+        - AttributeName: "Id"
+          AttributeType: "S"
+        - AttributeName: "Image"
+          AttributeType: "S"
+      KeySchema:
+        - AttributeName: "Id"
+          KeyType: "HASH"
+        - AttributeName: "Image"
+          KeyType: "RANGE"
+      ProvisionedThroughput:
+        ReadCapacityUnits: 1
+        WriteCapacityUnits: 1
+
+  # TODO: make the versioned lambda upload bucket
   BasicTableLambdaRole:
     Type: AWS::IAM::Role
     Properties:
@@ -40,6 +64,9 @@ Resources:
       FunctionName: !Ref LambdaFunctionName
       Role: !GetAtt BasicTableLambdaRole.Arn
       Runtime: nodejs16.x
+      Environment:
+        Variables:
+          DB_TABLE_NAME: !Ref ZipVersionId
       Handler: index.handler
       Code:
         S3Bucket: !Ref ZipBucketName
