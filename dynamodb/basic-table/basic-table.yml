@@ -47,6 +47,7 @@ Resources:
   BasicTableLambdaRole:
     Type: AWS::IAM::Role
     Properties:
+      RoleName: LambdaExecuteAndDynamoDB
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
@@ -57,6 +58,22 @@ Resources:
       # So lambda can write logs
       ManagedPolicyArns:
         - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: writeToDynamoDB
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - dynamodb:DescribeTable
+                Resource:
+                  - !GetAtt BookFinderTable.Arn
+                  # The following Resource specification didn't work even though it looks valid
+                  # in the error logs. A wildcard Resource ("*") worked OK. Had to use the !GetAttr
+                  # version above to get this policy to work??? It appears that the empty slots for
+                  # region and account were not automatically populated. Check the Outputs section
+                  # at the bottom of this file for good and bad versions of this Resource.
+                  # - !Sub "arn:${AWS::Partition}:dynamodb:::table/${TableName}"
 
   BasicTableLambda:
     Type: AWS::Lambda::Function
@@ -66,7 +83,7 @@ Resources:
       Runtime: nodejs16.x
       Environment:
         Variables:
-          DB_TABLE_NAME: !Ref ZipVersionId
+          DB_TABLE_NAME: !Ref TableName
       Handler: index.handler
       Code:
         S3Bucket: !Ref ZipBucketName
@@ -90,3 +107,9 @@ Resources:
     Properties:
       LogGroupName: !Join [/, ["/aws/lambda", !Ref BasicTableLambda]]
       RetentionInDays: 3
+
+Outputs:
+  GoodDBArn:
+    Value: !GetAtt BookFinderTable.Arn
+  BadDBArn:
+    Value: !Sub "arn:${AWS::Partition}:dynamodb:::table/${TableName}"

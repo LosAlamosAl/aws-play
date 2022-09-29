@@ -22,7 +22,7 @@ exports.handler = async (event, context) => {
 
   try {
     const data = await dynoClient.send(descTableCommand);
-    ret.body = JSON.stringify(data);
+    ret.body = data;
     return ret;
   } catch (error) {
     console.log(`descTableCommand failed: ${JSON.stringify(error)}`);
