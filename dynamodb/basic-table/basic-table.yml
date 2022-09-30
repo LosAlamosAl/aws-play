@@ -66,6 +66,7 @@ Resources:
               - Effect: Allow
                 Action:
                   - dynamodb:DescribeTable
+                  - dynamodb:PutItem
                 Resource:
                   - !GetAtt BookFinderTable.Arn
                   # The following Resource specification didn't work even though it looks valid
