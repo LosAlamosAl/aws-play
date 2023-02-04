@@ -28,6 +28,10 @@ Resources:
 Outputs:
   UserPoolId:
     Value: !Ref UserPool
+  UserPoolArn:
+    Value: !GetAtt
+      - UserPool
+      - Arn
 
   UserPoolClientId:
     Value: !Ref UserPoolClient
