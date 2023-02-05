@@ -64,7 +64,7 @@ Resources:
                   - ses:SendEmail
                   - ses:SendRawEmail
                 # This is bogus but specifying a hard domain arn (approved)
-                # fails and generates inconsistent errors.
+                # fails and generates inconsistent errors (see README.md)
                 Resource: "*"
 
   UserPoolTriggerLambda:
@@ -80,6 +80,8 @@ Resources:
           ALERT_TO_EMAIL: !Ref AlertToEmail
       MemorySize: 128
       Timeout: 3
+      # Robbed (and modded) from:
+      # https://docs.aws.amazon.com/cognito/latest/developerguide/user-pool-lambda-post-confirmation.html
       Code:
         ZipFile: |
           const { SES, SendEmailCommand } = require("@aws-sdk/client-ses");
