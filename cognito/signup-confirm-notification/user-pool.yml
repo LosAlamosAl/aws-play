@@ -1,0 +1,147 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS Play (cognito user pool)
+
+Parameters:
+  VerifiedFromEmail:
+    Type: String
+
+  AlertToEmail:
+    Type: String
+
+Resources:
+  # https://sanderknape.com/2020/08/amazon-cognito-jwts-authenticate-amazon-http-api/
+
+  UserPool:
+    Type: AWS::Cognito::UserPool
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      AutoVerifiedAttributes:
+        - email
+      UsernameAttributes:
+        - email
+      UserPoolName: aws-play-signup-confirm
+      LambdaConfig:
+        PostConfirmation: !GetAtt UserPoolTriggerLambda.Arn
+
+  # Maybe the client should be created with the project and not a priori?
+  UserPoolClient:
+    Type: AWS::Cognito::UserPoolClient
+    Properties:
+      ClientName: aws-play-signup-confirm
+      ExplicitAuthFlows:
+        - ALLOW_USER_PASSWORD_AUTH
+        - ALLOW_REFRESH_TOKEN_AUTH
+      UserPoolId: !Ref UserPool
+
+  UserPoolTriggerLambdaInvoke:
+    Type: AWS::Lambda::Permission
+    Properties:
+      Action: lambda:InvokeFunction
+      FunctionName: !GetAtt UserPoolTriggerLambda.Arn
+      Principal: cognito-idp.amazonaws.com
+
+  UserPoolTriggerLambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      # So lambda can write logs
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+      Policies:
+        - PolicyName: sendSignupConfirmationEmail
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ses:SendEmail
+                  - ses:SendRawEmail
+                # This is bogus but specifying a hard domain arn (approved)
+                # fails and generates inconsistent errors.
+                Resource: "*"
+
+  UserPoolTriggerLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: signup-confirm-trigger
+      Role: !GetAtt UserPoolTriggerLambdaRole.Arn
+      Runtime: nodejs18.x
+      Handler: index.handler
+      Environment:
+        Variables:
+          VERIFIED_FROM_EMAIL: !Ref VerifiedFromEmail
+          ALERT_TO_EMAIL: !Ref AlertToEmail
+      MemorySize: 128
+      Timeout: 3
+      Code:
+        ZipFile: |
+          const { SES, SendEmailCommand } = require("@aws-sdk/client-ses");
+          const ses = new SES();
+
+          exports.handler = async (event, context) => {
+            console.log(event);
+            if (event.request.userAttributes.email) {
+              await sendTheEmail(
+                process.env.ALERT_TO_EMAIL,
+                `User ${event.request.userAttributes.email} has confirmed BookFinder signup.`
+              );
+            }
+            return event;
+          };
+
+          const sendTheEmail = async (to, body) => {
+            const eParams = {
+              Destination: {
+                ToAddresses: [to],
+              },
+              Message: {
+                Body: {
+                  Text: {
+                    Data: body,
+                  },
+                },
+                Subject: {
+                  Data: "BookFinder signup confirmation",
+                },
+              },
+              Source: process.env.VERIFIED_FROM_EMAIL,
+            };
+            try {
+              await ses.send(new SendEmailCommand(eParams));
+            } catch (err) {
+              console.log(err);
+            }
+          };
+
+  UserPoolTriggerLimitRetries:
+    Type: AWS::Lambda::EventInvokeConfig
+    Properties:
+      FunctionName: !Ref UserPoolTriggerLambda
+      MaximumRetryAttempts: 0
+      Qualifier: "$LATEST"
+
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Join [/, ["/aws/lambda", !Ref UserPoolTriggerLambda]]
+      RetentionInDays: 3
+
+Outputs:
+  UserPoolId:
+    Value: !Ref UserPool
+  UserPoolArn:
+    Value: !GetAtt
+      - UserPool
+      - Arn
+
+  UserPoolClientId:
+    Value: !Ref UserPoolClient
