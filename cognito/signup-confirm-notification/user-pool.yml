@@ -24,7 +24,6 @@ Resources:
       LambdaConfig:
         PostConfirmation: !GetAtt UserPoolTriggerLambda.Arn
 
-  # Maybe the client should be created with the project and not a priori?
   UserPoolClient:
     Type: AWS::Cognito::UserPoolClient
     Properties:

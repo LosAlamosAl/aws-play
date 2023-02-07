@@ -11,15 +11,15 @@ make create VERIFIED_FROM_EMAIL="username@your_verified_domain" \
             ALERT_TO_EMAIL="username@your_verified_email"
 ```
 
-where `VERIFIED_FROM_EMAIL` is the sending domain of your notification email. AWS SES (their email sending service requires that this domain be verified (at least if you're still in the Cognito sandbox). The `username` portion of the email address can be anything, only `your_verified_domain` must be verified by AWS. See this [page](https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html) for the (admittedly tedious) domain verification procedure.
+where `VERIFIED_FROM_EMAIL` is the sending domain of your notification email. AWS SES (their email sending service) requires that this domain be verified (at least if you're still in the Cognito sandbox). The `username` portion of the email address can be anything, only `your_verified_domain` must be verified by AWS. See this [page](https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html) for the (admittedly tedious) domain verification procedure.
 
-The `ALERT_TO_EMAIL` is where you're sending your notificatons to. This too must be verified by AWS. In this case the email address itself is verified, not the domain. This required a response to an initial email that AWS will send to the address. You can initiate this process with the AWS CLI (V2 here):
+The `ALERT_TO_EMAIL` is where you're sending your notificatons to. This too must be verified by AWS. In this case the email address itself is verified, not the domain. This requires a response to an initial email that AWS will send to the address. You can initiate this process with the AWS CLI (V2 here):
 
 ```sh
 aws ses verify-email-identity --email-address username@your_verified_email
 ```
 
-Once your reply to the email from AWS this address will be verified.
+Once you reply to the email from AWS, this address will be verified.
 TODO: note about Pushover and whether it can be directly verified without forwarding. Of course, this can also be accomplished from the console, but I prefer the CLI whenever possible.
 
 Subsequnet changes, update the stack:
@@ -53,4 +53,4 @@ To confirm the signup (this would normally happen when the user replys to the si
 aws cognito-idp admin-confirm-sign-up --user-pool-id UserPoolId --username 'user@doofus.com'
 ```
 
-At this point you should see a notification email at `ALERT_TO_EMAIL` send from `VERIFIED_FROM_EMAIL`.
+At this point you should see a notification email at `ALERT_TO_EMAIL` that was sent from `VERIFIED_FROM_EMAIL`.
