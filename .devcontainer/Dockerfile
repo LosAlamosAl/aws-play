@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM debian:bullseye
 
 RUN adduser --home /home/devboy --shell /usr/bin/zsh --no-create-home devboy \
     && usermod -aG sudo devboy \
