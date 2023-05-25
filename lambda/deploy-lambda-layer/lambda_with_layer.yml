@@ -40,6 +40,8 @@ Resources:
           exports.handler = async (event) => {
             return foundNotFound;
           };
+      Layers:
+        - arn:aws:lambda:us-west-2:789665535291:layer:canvas-nodejs:2
 
   LambdaLogGroup:
     Type: AWS::Logs::LogGroup

@@ -1,0 +1,21 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Resources:
+  NodeCanvasLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: canvas-nodejs
+      Description: canvas@2.11.0
+      ContentUri:
+        Bucket: awsserverlessrepo-changesets-1f9ifp952i9h0
+        Key: 789665535291/arn:aws:serverlessrepo:us-east-1:990551184979:applications-lambda-layer-canvas-nodejs-versions-2.11.1/b5e1f651-5081-4c10-b54a-b1483d00eb2a
+      CompatibleRuntimes:
+      - nodejs16.x
+      - nodejs18.x
+      RetentionPolicy: Retain
+      LicenseInfo: MIT
+Outputs:
+  LayerVersion:
+    Description: Layer ARN Reference
+    Value:
+      Ref: NodeCanvasLayer
