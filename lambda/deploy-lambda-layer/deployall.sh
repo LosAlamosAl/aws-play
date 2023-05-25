@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+set -e
+
 # Everything hard coded for demo purposes.
 # Use command line arguments for real world application.
 
@@ -18,31 +20,29 @@ deploy_stack="lambda-layer-stack"
 test_stack="layer-test-stack"
 arn_placeholder="LAYER_ARN_PLACEHOLDER_REPLACED_BY_SED"
 
-set -x
-
 # Get the CFN template provided by the Serverless Application
 # Repository for the desired lambda layer and put it in a file.
-#aws serverlessrepo create-cloud-formation-template     \
-#    --application-id $sr_layer_arn                     \
-#    --query='TemplateUrl'                              \
-#    | xargs curl > $deploy_cfn
+aws serverlessrepo create-cloud-formation-template     \
+    --application-id $sr_layer_arn                     \
+    --query='TemplateUrl'                              \
+    | xargs curl > $deploy_cfn
 
 # Deploy the lambda layer into current account using the
 # retrieved CFN template. The deploy command is nice because
 # it's a synchronous operation.
-#aws cloudformation deploy                              \
-#    --stack-name $deploy_stack                         \
-#    --template-file $deploy_cfn
+aws cloudformation deploy                              \
+    --stack-name $deploy_stack                         \
+    --template-file $deploy_cfn
 
 # Extract the ARN of the deployed layer.
-#my_layer_arn=$(aws cloudformation describe-stacks      \
-#    --stack-name $deploy_stack                         \
-#    --query 'Stacks[0].Outputs[0].OutputValue'         \
-#    --output text)
+my_layer_arn=$(aws cloudformation describe-stacks      \
+    --stack-name $deploy_stack                         \
+    --query 'Stacks[0].Outputs[0].OutputValue'         \
+    --output text)
 
 # Replace the placeholder text in the main CFN file with
 # the ARN of the layer deployed into the account.
-#sed -i "s/${arn_placeholder}/${my_layer_arn}/" $test_layer_cfn
+sed -i "s/${arn_placeholder}/${my_layer_arn}/" $test_layer_cfn
 
 # Finally, deploy the main CFN file with the test lambda. The
 # test lambda uses the deployed layer and will return success
@@ -51,4 +51,3 @@ aws cloudformation deploy                              \
     --stack-name $test_stack                           \
     --template-file $test_layer_cfn                    \
     --capabilities CAPABILITY_NAMED_IAM
-
