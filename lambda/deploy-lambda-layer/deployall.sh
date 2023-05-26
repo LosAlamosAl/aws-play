@@ -15,10 +15,13 @@ set -e
 # test_stack            Stack name for $test_layer_cfn file
 # my_layer_arn          The ARN of the layer deployed into account
 # arn_placeholder       String in the main CFN file to replace with ARN
+# layer_name            Name of the layer deployed into the account
+# layer_version         Will typically be 1, but not always
 
 sr_layer_arn="arn:aws:serverlessrepo:us-east-1:990551184979:applications/lambda-layer-canvas-nodejs"
 deploy_cfn="deploy_lambda_layer.yml"
 test_layer_cfn="lambda_with_layer.yml"
+layer_name="canvas-nodejs"
 deploy_stack="lambda-layer-stack"
 test_stack="layer-test-stack"
 arn_placeholder="LAYER_ARN_PLACEHOLDER_REPLACED_BY_SED"
@@ -38,14 +41,14 @@ aws cloudformation deploy                              \
     --template-file $deploy_cfn
 
 # Extract the ARN of the deployed layer.
-my_layer_arn=$(aws cloudformation describe-stacks      \
-    --stack-name $deploy_stack                         \
-    --query 'Stacks[0].Outputs[0].OutputValue'         \
+# Thanks https://alexharv074.github.io/2021/03/15/how-to-write-an-aws-cli-script-part-i-patterns.html
+my_layer_arn=$(aws lambda list-layers                  \
+    --query 'Layers[?LayerName==`'"${layer_name}"'`].LatestMatchingVersion.LayerVersionArn' \
     --output text)
 
 # Replace the placeholder text in the main CFN file with
 # the ARN of the layer deployed into the account.
-sed -i "s/${arn_placeholder}/${my_layer_arn}/" $test_layer_cfn
+#sed -i "s/${arn_placeholder}/${my_layer_arn}/" $test_layer_cfn
 
 # Finally, deploy the main CFN file with the test lambda. The
 # test lambda uses the deployed layer and will return success
@@ -53,4 +56,5 @@ sed -i "s/${arn_placeholder}/${my_layer_arn}/" $test_layer_cfn
 aws cloudformation deploy                              \
     --stack-name $test_stack                           \
     --template-file $test_layer_cfn                    \
+    --parameter-overrides LayerARN=${my_layer_arn}     \
     --capabilities CAPABILITY_NAMED_IAM
