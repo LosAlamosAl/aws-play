@@ -1,6 +1,10 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: AWS Play (deploy lambda layer)
 
+Parameters:
+  LayerARN:
+    Type: String
+
 Resources:
   LambdaRole:
     Type: AWS::IAM::Role
@@ -41,7 +45,7 @@ Resources:
             return foundNotFound;
           };
       Layers:
-        - LAYER_ARN_PLACEHOLDER_REPLACED_BY_SED
+        - !Ref LayerARN
 
   LambdaLogGroup:
     Type: AWS::Logs::LogGroup
