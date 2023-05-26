@@ -1,5 +1,8 @@
 #!/usr/bin/env bash
 
+# Deploy a lambda layer into your account (deploy_stack).
+# Use the layer in a test lambda (test_stack)
+
 set -e
 
 # Everything hard coded for demo purposes.
