@@ -11,13 +11,9 @@ set -e
 # deploy_cfn:           The CFN file we create to deploy the layer
 # test_stack            Stack name for $test_layer_cfn file
 # layer_name            Name of the layer deployed into the account
-#                       This can be retrieved in a number of ways:
-#                       aws lambda list-layers
-#                       [TODO] more!
+#                       Could be retrieved automatically but if more
+#                       than one layer in account could be a problem
 # layer_version         Will typically be one, but not always
-#                       This can be retrieved in a number of ways:
-#                       aws lambda list-layers
-#                       aws lambda list-layer-versions --layer-name ...
 
 deploy_stack="lambda-layer-stack"
 deploy_cfn="deploy_lambda_layer.yml"

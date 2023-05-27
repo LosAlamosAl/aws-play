@@ -46,10 +46,6 @@ my_layer_arn=$(aws lambda list-layers                  \
     --query 'Layers[?LayerName==`'"${layer_name}"'`].LatestMatchingVersion.LayerVersionArn' \
     --output text)
 
-# Replace the placeholder text in the main CFN file with
-# the ARN of the layer deployed into the account.
-#sed -i "s/${arn_placeholder}/${my_layer_arn}/" $test_layer_cfn
-
 # Finally, deploy the main CFN file with the test lambda. The
 # test lambda uses the deployed layer and will return success
 # or failure based on the availability of the layer.
