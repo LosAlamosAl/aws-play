@@ -5,6 +5,9 @@ Parameters:
   LayerARN:
     Type: String
 
+  LambdaName:
+    Type: String
+
 Resources:
   LambdaRole:
     Type: AWS::IAM::Role
@@ -23,7 +26,7 @@ Resources:
   TestLambda:
     Type: AWS::Lambda::Function
     Properties:
-      FunctionName: test-lambda-layer
+      FunctionName: !Ref LambdaName
       Role: !GetAtt LambdaRole.Arn
       Runtime: nodejs18.x
       Handler: index.handler

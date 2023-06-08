@@ -8,7 +8,6 @@ set -e
 # Use command line arguments for real world application.
 
 # deploy_stack          Stack name for $deploy_cfn file
-# deploy_cfn:           The CFN file we create to deploy the layer
 # test_stack            Stack name for $test_layer_cfn file
 # layer_name            Name of the layer deployed into the account
 #                       Could be retrieved automatically but if more
@@ -16,7 +15,6 @@ set -e
 # layer_version         Will typically be one, but not always
 
 deploy_stack="lambda-layer-stack"
-deploy_cfn="deploy_lambda_layer.yml"
 test_stack="layer-test-stack"
 layer_name="canvas-nodejs"
 
@@ -39,6 +37,3 @@ layer_version=$(aws lambda list-layers                  \
 aws lambda delete-layer-version                        \
     --layer-name $layer_name                           \
     --version-number $layer_version
-
-# Remove the layer's CFN file retrieved via cURL in deployall.sh
-rm $deploy_cfn

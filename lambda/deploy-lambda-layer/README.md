@@ -1,12 +1,12 @@
-## Experiments with AWS: Deploy Lambda Layer with CLI and CFN
+## AWS Play: Deploy Lambda Layer with CLI and CFN
 
 See the blog post for a detailed writeup. This repo is an abbreviated description the tests the process of automatically installing the layer and testing its availability to a published lambda function.
 
 Requirements:
 
 - [AWS CLI Version 2](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
-- `curl`, `sed`
-- Appropriate credential to deploy to target AWS account
+- `curl`, `bash`
+- Appropriate credential to deploy to target AWS account (unfortunately `admin` because an IAM policy is created)
 
 Steps:
 
@@ -14,7 +14,7 @@ Get ARN of lambda layer from the [AWS Serverless Repository](https://serverlessr
 
 Make sure you have your credentials set up to access your account via the CLI (using either IAM an IAM user or IAM Identity Center single signon).
 
-Once you have the ARN yo ucan use the CLI to retrieve a Cloudformation file that will allow you to deploy the lambda layer into your account.
+Once you have the ARN you can use the CLI to retrieve a Cloudformation file that will allow you to deploy the lambda layer into your account.
 
 ```sh
 aws serverlessrepo create-cloud-formation-template     \
@@ -37,4 +37,10 @@ Query the stack and use the CLI to verify that the stack deployed correctly.
 aws cloudformation list-stacks
 aws cloudformation describe-stacks --stack-name DEPLOY_LAYER_STACK_NAME
 aws lambda list-layers
+```
+
+Test the lambda, and it's use of the layer, with:
+
+```sh
+aws lambda invoke --function-name test-lambda-layer out.json
 ```

@@ -17,6 +17,7 @@ set -e
 # arn_placeholder       String in the main CFN file to replace with ARN
 # layer_name            Name of the layer deployed into the account
 # layer_version         Will typically be 1, but not always
+# lambda_name:          Symbolic name of test lambda function
 
 sr_layer_arn="arn:aws:serverlessrepo:us-east-1:990551184979:applications/lambda-layer-canvas-nodejs"
 deploy_cfn="deploy_lambda_layer.yml"
@@ -24,7 +25,7 @@ test_layer_cfn="lambda_with_layer.yml"
 layer_name="canvas-nodejs"
 deploy_stack="lambda-layer-stack"
 test_stack="layer-test-stack"
-arn_placeholder="LAYER_ARN_PLACEHOLDER_REPLACED_BY_SED"
+lambda_name="test-lambda-layer"
 
 # Get the CFN template provided by the Serverless Application
 # Repository for the desired lambda layer and put it in a file.
@@ -46,11 +47,20 @@ my_layer_arn=$(aws lambda list-layers                  \
     --query 'Layers[?LayerName==`'"${layer_name}"'`].LatestMatchingVersion.LayerVersionArn' \
     --output text)
 
-# Finally, deploy the main CFN file with the test lambda. The
+# Deploy the main CFN file with the test lambda. The
 # test lambda uses the deployed layer and will return success
 # or failure based on the availability of the layer.
 aws cloudformation deploy                              \
     --stack-name $test_stack                           \
     --template-file $test_layer_cfn                    \
-    --parameter-overrides LayerARN=${my_layer_arn}     \
+    --parameter-overrides LayerARN=${my_layer_arn} LambdaName=${lambda_name} \
     --capabilities CAPABILITY_NAMED_IAM
+
+# Confirm that the layer was correctly deployed by
+# executing the test lambda.
+aws lambda invoke --function-name ${lambda_name} out.json
+cat out.json
+rm out.json
+
+# Remove the layer's CFN file retrieved via cURL above
+rm $deploy_cfn
