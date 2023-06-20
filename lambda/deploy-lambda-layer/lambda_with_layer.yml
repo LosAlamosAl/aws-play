@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: AWS Play (deploy lambda layer)
+
+Parameters:
+  LayerARN:
+    Type: String
+
+  LambdaName:
+    Type: String
+
+Resources:
+  LambdaRole:
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: 2012-10-17
+        Statement:
+          - Action: sts:AssumeRole
+            Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+      # So lambda can write logs
+      ManagedPolicyArns:
+        - "arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole"
+
+  TestLambda:
+    Type: AWS::Lambda::Function
+    Properties:
+      FunctionName: !Ref LambdaName
+      Role: !GetAtt LambdaRole.Arn
+      Runtime: nodejs18.x
+      Handler: index.handler
+      MemorySize: 128
+      Timeout: 3
+      Code:
+        ZipFile: |
+          // Assume success--override if error
+          let foundNotFound = "Layer module WAS found";
+          try {
+            // This comes from the deployed lambda layer
+            const { createCanvas } = require("canvas");
+          } catch (e) {
+            if (e instanceof Error && e.code === "MODULE_NOT_FOUND")
+              foundNotFound = "Layer module NOT found";
+            else foundNotFound = "Error other than MODULE_NOT_FOUND";
+          }
+          exports.handler = async (event) => {
+            return foundNotFound;
+          };
+      Layers:
+        - !Ref LayerARN
+
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    DeletionPolicy: Delete
+    UpdateReplacePolicy: Delete
+    Properties:
+      LogGroupName: !Join [/, ["/aws/lambda", !Ref TestLambda]]
+      RetentionInDays: 3
+
+Outputs:
+  LambdaFunctionName:
+    Value: !Ref TestLambda
