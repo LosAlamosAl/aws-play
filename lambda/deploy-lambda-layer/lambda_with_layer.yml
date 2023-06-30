@@ -42,7 +42,7 @@ Resources:
           } catch (e) {
             if (e instanceof Error && e.code === "MODULE_NOT_FOUND")
               foundNotFound = "Layer module NOT found";
-            else foundNotFound = "Error other than MODULE_NOT_FOUND";
+            else foundNotFound = `Error other than MODULE_NOT_FOUND: ${e.code}`;
           }
           exports.handler = async (event) => {
             return foundNotFound;
