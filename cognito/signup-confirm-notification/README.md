@@ -11,7 +11,9 @@ make create VERIFIED_FROM_EMAIL="username@your_verified_domain" \
             ALERT_TO_EMAIL="username@your_verified_email"
 ```
 
-where `VERIFIED_FROM_EMAIL` is the sending domain of your notification email. AWS SES (their email sending service) requires that this domain be verified (at least if you're still in the Cognito sandbox). The `username` portion of the email address can be anything, only `your_verified_domain` must be verified by AWS. See this [page](https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html) for the (admittedly tedious) domain verification procedure.
+where `VERIFIED_FROM_EMAIL` is the sending email address of your notification email. AWS SES (their email sending service) requires that this domain be verified (at least if you're still in the Cognito sandbox). The `username` portion of the email address can be anything, only `your_verified_domain` must be verified by AWS. See this [page](https://docs.aws.amazon.com/ses/latest/dg/creating-identities.html) for the (admittedly tedious) domain verification procedure.
+
+Sending from a verified domain is advantageous for a number of reasons, one of which it that the recipient's email will show a `From` field with your domain. In this case, if you're just sending notification emails to yourself, you can use another verified email address as the `VERIFIED_FROM_EMAIL`. This will save you the hassle of verifying a domain with the only downside being that the `From` filed of the email will show `E-mail Gateway`.
 
 The `ALERT_TO_EMAIL` is where you're sending your notificatons to. This too must be verified by AWS. In this case the email address itself is verified, not the domain. This requires a response to an initial email that AWS will send to the address. You can initiate this process with the AWS CLI (V2 here):
 
