@@ -41,8 +41,10 @@ The `deleteall.sh` script the deletes previously installed resources from your a
 1. Use Cloudformation to delete the `lambda-layer-stack`.
 1. Use Cloudformation to delete the `layer-test-stack`.
 1. The layer itself is not deleted by Cloudformation since, by default, its `DeletionPolicy` is `RETAIN`.
-1. Get the **latest version** of the layer and manually delete it using the AWS CLI. PLease see the [blog post]() for potential _gotchas_ with lambda layer versions and how to delete \*_all_ versions of an installed layer.
+1. Get the **latest version** of the layer and manually delete it using the AWS CLI. PLease see the [blog post]() for potential _gotchas_ with lambda layer versions and how to delete **all** versions of an installed layer.
 
 ### Disclaimer
 
 These scripts install few resources (a lambda layer, a test lambda function, and lambda logs) and we only execute the test lambda once (or a few times if you play around with it) so runaway AWS bills should be unlikely. However, as with all things AWS, there is potential for billing surprises and I make no promise that there won't be any with this code. **Use at your own risk**.
+
+I developed this code at age 67.
