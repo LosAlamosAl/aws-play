@@ -6,10 +6,11 @@
             "settings": {
                 "dotfiles.repository": "https://github.com/losalamosal/dotfiles",
                 "dotfiles.targetPath": "~/dotfiles",
-                "dotfiles.installCommand": "~/dotfiles/install.sh",
+                "dotfiles.installCommand": "install.sh",
                 "terminal.integrated.defaultProfile.linux": "zsh",
                 "editor.defaultFormatter": "esbenp.prettier-vscode",
-                "editor.formatOnSave": true
+                "editor.formatOnSave": true,
+                "cfnLint.path": "/home/devboy/.venv/bin/cfn-lint"
             },
             "extensions": [
                 "kddejong.vscode-cfn-lint",
