@@ -23,4 +23,11 @@ read:
 
 .PHONY: delete
 delete:
+# Delete all object versions and delete markers before deleting the bucket
+	@-aws s3api delete-objects --bucket $(bucket_name) 							  \
+		--delete "$$(aws s3api list-object-versions --bucket $(bucket_name) 	  \
+		--query='{Objects: DeleteMarkers[].{Key:Key,VersionId:VersionId}}')"
+	@-aws s3api delete-objects --bucket $(bucket_name) 							  \
+		--delete "$$(aws s3api list-object-versions --bucket $(bucket_name) 	  \
+		--query='{Objects: Versions[].{Key:Key,VersionId:VersionId}}')"
 	aws cloudformation delete-stack --stack-name $(stack_name)

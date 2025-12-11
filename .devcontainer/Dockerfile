@@ -53,6 +53,8 @@ RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-aarch64.zip" -o awscliv2
 # So we create a virtual environment later and install cfn-lint there.
 #RUN pip3 install cfn-lint
 
+RUN npm install -g aws-cdk@latest
+
 USER devboy
 WORKDIR /home/devboy
 
