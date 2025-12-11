@@ -16,8 +16,7 @@ Resources:
       LifecycleConfiguration:
         Rules:
           - Status: Enabled
-            Id: "lambda version expiration rule"
-            ExpirationInDays: 1
+            Id: "non-current version expiration"
             NoncurrentVersionExpiration:
               NoncurrentDays: 1
               NewerNoncurrentVersions: 3
