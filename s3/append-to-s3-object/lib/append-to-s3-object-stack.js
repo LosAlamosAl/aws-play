@@ -5,7 +5,7 @@ const apigateway = require("aws-cdk-lib/aws-apigateway");
 const s3 = require("aws-cdk-lib/aws-s3");
 
 const bucketName = "append-to-s3-object";
-const objectName = "cdk.json";
+const objectName = "someobjectname";
 
 class AppendToS3ObjectStack extends Stack {
   constructor(scope, id, props) {
